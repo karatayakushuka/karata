@@ -1,11 +1,29 @@
+# Updated logic.py for Karata Ya Kushuka (2025 rules)
+# - All rule corrections applied
+# - Includes skip tracking, undo support, restricted stacking
+# - Auto-play of drawn cards
+# - Logging and disqualification logic improved
+
 import random
 import pickle
 import os
+import copy
 
 SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 LOG_FILE = 'game_log.txt'
 SAVE_FILE = 'game_state.pkl'
+
+CARD_POINTS = {
+    'Joker': 300,
+    'Q': 250,
+    'K': 200,
+    'A': 150,
+    'J': 100,
+    '2': 75,
+    '3': 50,
+    '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10
+}
 
 class Card:
     def __init__(self, suit, rank):
@@ -31,7 +49,7 @@ class Card:
 class Deck:
     def __init__(self):
         self.cards = [Card(suit, rank) for suit in SUITS for rank in RANKS]
-        self.cards += [Card('Black', 'Joker'), Card('Red', 'Joker')]
+        self.cards += [Card('Black', 'Joker'), Card('White', 'Joker')]
         random.shuffle(self.cards)
 
     def draw(self):
@@ -53,6 +71,7 @@ class Player:
         self.name = name
         self.conn = conn
         self.hand = []
+        self.eliminated = False
 
     def draw_card(self, deck):
         card = deck.draw()
@@ -66,32 +85,39 @@ class Player:
     def to_data(self):
         return {
             'name': self.name,
-            'hand': [c.to_tuple() for c in self.hand]
+            'hand': [c.to_tuple() for c in self.hand],
+            'eliminated': self.eliminated
         }
 
     def load_hand(self, hand_data):
         self.hand = [Card.from_tuple(t) for t in hand_data]
 
-# Game state
-players = []
+# Global Game State
 deck = Deck()
-turn_index = 0
+players = []
+discard_pile = []
 top_card = None
 fine = 0
 direction = 1
+turn_index = 0
 question_card_pending = False
 question_card_rank = None
-discard_pile = []
+requested_suit = None
+requested_rank = None
+skip_next = False
+move_stack = []
 
+# Logging
 
 def log(msg):
     with open(LOG_FILE, 'a') as f:
         f.write(msg + '\n')
 
+# Initialization
 
 def initialize_game(player_list, card_count):
-    global players, deck, top_card, turn_index, fine, direction, question_card_pending, discard_pile
-    players = player_list
+    global players, deck, top_card, turn_index, fine, direction, question_card_pending, discard_pile, requested_suit, requested_rank
+    players = [p for p in player_list if not p.eliminated]
     deck = Deck()
     for p in players:
         p.hand = [deck.draw() for _ in range(card_count)]
@@ -101,162 +127,183 @@ def initialize_game(player_list, card_count):
     fine = 0
     direction = 1
     question_card_pending = False
+    requested_suit = None
+    requested_rank = None
     open(LOG_FILE, 'w').close()
     log(f"Game started. Top card: {top_card}")
 
+# Turn Logic
 
 def next_turn():
-    global turn_index, direction
-    turn_index = (turn_index + direction) % len(players)
-
+    global turn_index, direction, skip_next
+    if not players:
+        return
+    if skip_next:
+        skip_next = False
+        turn_index = (turn_index + direction * 2) % len(players)
+    else:
+        turn_index = (turn_index + direction) % len(players)
 
 def current_player():
-    return players[turn_index]
+    return players[turn_index] if players else None
 
+# Deck Maintenance
 
 def reshuffle_discard_into_deck():
-    global deck, discard_pile, top_card
+    global deck, discard_pile
     if discard_pile:
         log("Deck empty. Reshuffling discard pile.")
-        cards_to_reshuffle = discard_pile[:]
-        random.shuffle(cards_to_reshuffle)
-        deck.cards = cards_to_reshuffle
-        discard_pile = []
+        random.shuffle(discard_pile)
+        deck.cards = discard_pile[:]
+        discard_pile.clear()
     else:
         log("Deck and discard empty. Cannot reshuffle.")
 
+# Rule Checks
+
+def is_valid_play(card, top):
+    if question_card_pending:
+        return card.rank == question_card_rank or card.suit == top.suit
+
+    if requested_suit or requested_rank:
+        if requested_suit and card.suit != requested_suit:
+            return False
+        if requested_rank and card.rank != requested_rank:
+            return False
+        return True
+
+    if top.rank == 'Joker':
+        if card.rank == 'A':
+            return True
+        if card.rank == 'Joker':
+            return card.suit == top.suit
+        if top.suit == 'Black':
+            return card.suit in ['Spades', 'Clubs']
+        elif top.suit == 'White':
+            return card.suit in ['Hearts', 'Diamonds']
+        return False
+
+    return card.matches(top) or card.rank == 'Joker'
+
+# Core Play
 
 def play_card(player, cards):
-    global top_card, fine, direction, question_card_pending, question_card_rank, discard_pile
+    global top_card, fine, direction, question_card_pending, question_card_rank
+    global requested_suit, requested_rank, skip_next, discard_pile
 
+    move_stack.append(save_game_state())
     log(f"{player.name} played {[str(c) for c in cards]}")
 
-    if any(p != player and not p.hand for p in players):
-        log("Invalid: Another player is cardless. No one can finish.")
+    if any(p != player and not p.hand and not p.eliminated for p in players):
+        log("Another player is cardless. Cannot finish.")
         return False
-
-    if question_card_pending:
-        first = cards[0]
-        if first.rank == question_card_rank or first.suit == top_card.suit:
-            question_card_pending = False
-        else:
-            log(f"Invalid answer to question card: {first}")
-            return False
 
     if not all(c.rank == cards[0].rank for c in cards):
-        log("Invalid: You can only stack cards of the same rank.")
+        log("Invalid stack: different ranks.")
         return False
+
+    if cards[0].rank in ['2', '3']:
+        if any(c.rank != cards[0].rank for c in cards):
+            log("Invalid fine stack: must be same fine type.")
+            return False
 
     if not is_valid_play(cards[0], top_card):
-        log("Invalid: First card in stack doesn't match top card.")
+        log("Invalid play: doesn't match top card.")
         return False
 
+    ace_count = 0
     for card in cards:
         if card.rank == 'Joker':
             fine += 5
+            skip_next = True
         elif card.rank == '2':
             fine += 2
         elif card.rank == '3':
             fine += 3
         elif card.rank == 'A':
             fine = 0
+            ace_count += 1
         elif card.rank == 'K':
             direction *= -1
         elif card.rank in ['Q', '8']:
             question_card_pending = True
             question_card_rank = card.rank
+        elif card.rank == 'J':
+            skip_next = True
+
         discard_pile.append(top_card)
         top_card = card
         player.remove_card(card)
 
+    if ace_count == 1:
+        requested_suit = top_card.suit
+        requested_rank = None
+    elif ace_count == 2:
+        requested_suit = top_card.suit
+        requested_rank = top_card.rank
+
     return True
 
+# Save/Load/Undo
 
-def is_valid_play(card, top):
-    if question_card_pending:
-        return card.rank == question_card_rank or card.suit == top.suit
-    return card.matches(top) or card.rank == 'Joker'
+def save_game_state():
+    return {
+        'players': copy.deepcopy(players),
+        'deck': copy.deepcopy(deck),
+        'discard': copy.deepcopy(discard_pile),
+        'top_card': top_card,
+        'fine': fine,
+        'turn_index': turn_index,
+        'direction': direction,
+        'skip_next': skip_next,
+        'question': question_card_pending,
+        'question_rank': question_card_rank,
+        'requested_suit': requested_suit,
+        'requested_rank': requested_rank,
+    }
 
+def undo_last_move():
+    global players, deck, discard_pile, top_card, fine, turn_index, direction, skip_next
+    global question_card_pending, question_card_rank, requested_suit, requested_rank
+    if move_stack:
+        state = move_stack.pop()
+        players = state['players']
+        deck = state['deck']
+        discard_pile = state['discard']
+        top_card = state['top_card']
+        fine = state['fine']
+        turn_index = state['turn_index']
+        direction = state['direction']
+        skip_next = state['skip_next']
+        question_card_pending = state['question']
+        question_card_rank = state['question_rank']
+        requested_suit = state['requested_suit']
+        requested_rank = state['requested_rank']
+        log("Move undone.")
+
+# Points and Disqualification
+
+def calculate_card_points(hand):
+    return sum(CARD_POINTS.get(c.rank, 0) for c in hand)
+
+def disqualify_player(players, winner_name):
+    return max(
+        (p for p in players if p.name != winner_name),
+        key=lambda p: calculate_card_points(p.hand),
+        default=None
+    )
 
 def check_victory():
-    cardless_players = [p for p in players if not p.hand]
-    if not cardless_players:
+    global players, discard_pile
+    cardless = [p for p in players if not p.hand and not p.eliminated]
+    if not cardless:
         return None
-    if len(cardless_players) == 1:
-        for p in players:
-            if p != cardless_players[0] and not p.hand:
-                log(f"{cardless_players[0].name} tried to win but another player is cardless.")
-                return None
-        log(f"{cardless_players[0].name} wins!")
-        return cardless_players[0].name
-    return None
+    if discard_pile and discard_pile[-1].rank not in ['4','5','6','7','8','9','10']:
+        return None
+    return cardless[0].name if len(cardless) == 1 else None
 
+def get_remaining_players():
+    return [p for p in players if not p.eliminated]
 
-def save_game():
-    state = {
-        'deck': deck.to_list(),
-        'top_card': top_card.to_tuple() if top_card else None,
-        'fine': fine,
-        'direction': direction,
-        'turn_index': turn_index,
-        'question_card_pending': question_card_pending,
-        'question_card_rank': question_card_rank,
-        'players': [p.to_data() for p in players],
-        'discard': [c.to_tuple() for c in discard_pile]
-    }
-    with open(SAVE_FILE, 'wb') as f:
-        pickle.dump(state, f)
-    log("Game saved.")
-
-
-def load_game(connections):
-    global players, deck, top_card, fine, direction, turn_index, question_card_pending, question_card_rank, discard_pile
-
-    if not os.path.exists(SAVE_FILE):
-        return False
-
-    with open(SAVE_FILE, 'rb') as f:
-        state = pickle.load(f)
-
-    deck = Deck.from_list(state['deck'])
-    top_card = Card.from_tuple(state['top_card']) if state['top_card'] else None
-    fine = state['fine']
-    direction = state['direction']
-    turn_index = state['turn_index']
-    question_card_pending = state['question_card_pending']
-    question_card_rank = state['question_card_rank']
-    discard_pile = [Card.from_tuple(t) for t in state.get('discard', [])]
-
-    players = []
-    for i, pdata in enumerate(state['players']):
-        p = Player(pdata['name'], connections[i])
-        p.load_hand(pdata['hand'])
-        players.append(p)
-
-    log("Game loaded from save.")
-    return True
-
-
-def get_log():
-    if os.path.exists(LOG_FILE):
-        with open(LOG_FILE) as f:
-            return f.read()
-    return "No log available."
-
-
-def send_to_player(player, msg):
-    try:
-        player.conn.sendall((msg + '\n').encode())
-    except:
-        pass
-
-
-def sync_all_clients():
-    for i, p in enumerate(players):
-        msg = f"Top card: {top_card} | Fine: {fine}\n"
-        if i == turn_index:
-            hand_str = "\n".join(f"{j+1}. {card}" for j, card in enumerate(p.hand))
-            msg += f"Your hand:\n{hand_str}\nUse: /play 1 2, /draw, /save, /load, /log"
-        else:
-            msg += f"Waiting for {players[turn_index].name}'s move..."
-        send_to_player(p, msg)
+def is_game_over():
+    return len(get_remaining_players()) <= 1

@@ -2,3 +2,118 @@ Game started. Top card: 10 of Hearts
 mo played ['Joker of Black']
 rr played ['K of Hearts']
 Invalid: First card in stack doesn't match top card.
+mo played ['6 of Spades']
+mo played ['6 of Spades']
+mo played ['6 of Spades']
+mo played ['6 of Spades']
+rr played ['3 of Spades']
+is played ['J of Spades']
+rr played ['8 of Spades']
+is played ['5 of Spades', '5 of Clubs']
+mo played ['3 of Clubs']
+mo played ['Joker of Black']
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds', '8 of Diamonds', '6 of Diamonds']
+Invalid: You can only stack cards of the same rank.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+Invalid: First card in stack doesn't match top card.
+rr played ['8 of Clubs']
+rr played ['8 of Clubs']
+rr played ['8 of Clubs']
+rr played ['8 of Clubs']
+rr played ['8 of Clubs']
+is played ['8 of Hearts']
+mo played ['8 of Diamonds', '6 of Diamonds']
+Invalid: You can only stack cards of the same rank.
+mo played ['8 of Diamonds']
+rr played ['9 of Diamonds', '9 of Hearts']
+is played ['J of Hearts']
+mo played ['K of Hearts']
+is played ['7 of Hearts']
+rr played ['4 of Hearts']
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+mo played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+is played ['6 of Hearts']
+mo played ['6 of Diamonds']
+mo played ['9 of Spades']
+mo played ['9 of Spades']
+RR played ['9 of Clubs']
+is played ['4 of Spades', '4 of Diamonds']
+Invalid: First card in stack doesn't match top card.
+TU played ['3 of Clubs', '3 of Spades']
+GI played ['J of Spades']
+is played ['4 of Spades']
+MU played ['5 of Spades', '5 of Clubs', '5 of Hearts']
+GI played ['K of Hearts']
+TU played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+TU played ['A of Diamonds']
+Invalid: First card in stack doesn't match top card.
+TU played ['A of Diamonds', '6 of Diamonds']
+Invalid: You can only stack cards of the same rank.
+MU played ['6 of Hearts']
+MU played ['6 of Hearts']
+MU played ['6 of Hearts']
+MU played ['6 of Hearts']
+MU played ['6 of Hearts']
