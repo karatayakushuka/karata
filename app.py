@@ -123,6 +123,41 @@ startup_backup_routine(list_games, lambda code: load_from_db(code))
 
 
 # PDF Download
+def create_rules_pdf():
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(30, height - 30, "Official Karata ya Kushuka Rules")
+
+    c.setFont("Helvetica", 11)
+    y = height - 60
+    rules = [
+        "To Win:",
+        " - A player must play their last card legally.",
+        " - No other player must be cardless.",
+        " - Last card must be valid, including requests/fines.",
+        "",
+        "After Victory:",
+        " - Reveal all hands.",
+        " - Calculate card points.",
+        " - Player with most points is disqualified.",
+        " - Joker=300, Q=250, K=200, A=150, J=100, 2=75, 3=50, 4–10=rank.",
+        "",
+        "Round Elimination:",
+        " - Game restarts with remaining players.",
+        " - Final 2 players play till 1 wins."
+    ]
+    for line in rules:
+        c.drawString(40, y, line)
+        y -= 18
+
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return buffer
+    
 rules_pdf = create_rules_pdf()
 st.download_button("📥 Download Official Rules", data=rules_pdf, file_name="karata_rules.pdf")
 
