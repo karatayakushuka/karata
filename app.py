@@ -111,7 +111,7 @@ if st.session_state.game_code and st.session_state.player_name:
                 'history': [],
                 'countdown_start': None
             }, {player_name: [c.to_tuple() for c in hand]})
-            st.experimental_rerun()
+            st.rerun()
     else:
         state, players = get_game_state()
 
@@ -137,7 +137,7 @@ if st.session_state.game_code and st.session_state.player_name:
             state['log'].append(f"{player_name} joined the game.")
             state.setdefault('player_ids', {})[player_name] = player_id
             save_game_state(game_code, state, players)
-            st.experimental_rerun()
+            st.rerun()
 
         if not state.get('started', False):
             if player_count == max_players:
@@ -150,7 +150,7 @@ if st.session_state.game_code and st.session_state.player_name:
                     state['started'] = True
                     save_game_state(game_code, state, players)
                     st.success("Game auto-started.")
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.warning(f"Max players reached. Game starts in {remaining} seconds...")
             elif player_name == host and player_count >= 3:
@@ -232,7 +232,7 @@ if st.session_state.game_code and st.session_state.player_name:
                         state['turn_index'] = (state['turn_index'] + state['direction']) % len(players)
                         players[player_name] = hand
                         save_game_state(game_code, state, players)
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         st.warning("No cards left to draw.")
 
@@ -243,7 +243,7 @@ if st.session_state.game_code and st.session_state.player_name:
                     state['log'].append(turn_log)
                     state['history'].append(turn_log)
                     save_game_state(game_code, state, players)
-                    st.experimental_rerun()
+                    st.rerun()
 
         if st.button("Show Log"):
             st.code("\n".join(state['log']), language='text')
@@ -256,4 +256,4 @@ if st.session_state.game_code and st.session_state.player_name:
 
         if player_name != turn_player:
             time.sleep(7)
-            st.experimental_rerun()
+            st.rerun()
