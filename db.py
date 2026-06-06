@@ -18,7 +18,7 @@ def init_db():
         """)
         conn.commit()
 
-def save_to_db(game_code, state, players):
+def save_game_state(game_code, state, players):
     state_json = json.dumps(state)
     players_json = json.dumps(players)
     with sqlite3.connect(DB_FILE) as conn:
