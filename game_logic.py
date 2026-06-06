@@ -162,6 +162,9 @@ def reshuffle_discard_into_deck():
 # Rule Checks
 
 def is_valid_play(card, top):
+    if not hasattr(card, 'rank') or not hasattr(card, 'suit'):
+        raise TypeError(f"Expected a Card object, got {type(card)}: {card}")
+        
     if isinstance(top, list):
         if len(top) == 0:
             return True  # nothing to match against
