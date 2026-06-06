@@ -218,6 +218,10 @@ if st.session_state.game_code and st.session_state.player_name:
     state_data = load_game_state(game_code)
 
     if not state_data:
+        st.warning(f"Game {game_code} not found.")
+    # show create game UI
+
+    if not state_data:
         max_players = st.sidebar.number_input("Max Players", 3, 10, 6, key="max_players")
         if st.button("Create New Game"):
             d = Deck()
