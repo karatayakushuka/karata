@@ -173,6 +173,7 @@ def is_valid_play(card, top):
         return True
 
     if top.rank == 'Joker':
+        print(f"DEBUG: top_card type={type(top)}, value={top}")
         if card.rank == 'A':
             return True
         if card.rank == 'Joker':
