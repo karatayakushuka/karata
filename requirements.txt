@@ -1,3 +1,4 @@
+cryptography
 streamlit
 streamlit-autorefresh
 uuid
