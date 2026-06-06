@@ -187,7 +187,9 @@ def is_valid_play(card, top):
 
 # Core Play
 
-def play_card(player, cards):
+def play_card(player, cards, top_card, fine, direction,
+              question_pending, question_rank,
+              discard_pile, requested_suit, requested_rank):
     global top_card, fine, direction, question_card_pending, question_card_rank
     global requested_suit, requested_rank, skip_next, discard_pile
 
