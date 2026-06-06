@@ -187,15 +187,19 @@ st.session_state.lobby_password = st.sidebar.text_input("Lobby Password (optiona
 
 # Resume
 resume_name = ""
+state_data = None
 if st.session_state.game_code:
-    game_code = st.session_state.game_code
-    state_data = load_game_state(game_code)
-    if state_data:
-        state, players = state_data
-        for name, pid in state.get('player_ids', {}).items():
-            if pid == st.session_state.player_id:
-                resume_name = name
-                break
+    try:
+        state_data = load_game_state(game_code)
+    except ValueError:
+        st.warning(f"Game {game_code} not found create a new game.")
+
+if state_data:
+    state, players = state_data
+    for name, pid in state.get('player_ids', {}).items():
+        if pid == st.session_state.player_id:
+            resume_name = name
+            break
 
 if resume_name:
     if st.sidebar.button(f"🔁 Resume as {resume_name}"):
@@ -232,13 +236,14 @@ if st.session_state.game_code and st.session_state.player_name:
                 'log': [],
                 'started': False,
                 'max_players': max_players,
-                'host': player_name,
-                'player_ids': {player_name: player_id},
-                'lobby_password': lobby_password,
+                'host': st.session_state.player_name,
+                'player_ids': {st.session_state.player_name: st.session_state.player_id},
+                'lobby_password': st.session_state.lobby_password,
                 'history': [],
                 'countdown_start': None,
                 'eliminated': []
-            }, {player_name: [c.to_tuple() for c in hand]})
+            }, {st.session_state.player_name: [c.to_tuple() for c in hand]})
+            st.success(f"New game {game_code} created!")
             st.rerun()
     else:
         state, players = get_game_state()
