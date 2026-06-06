@@ -189,6 +189,7 @@ st.session_state.lobby_password = st.sidebar.text_input("Lobby Password (optiona
 resume_name = ""
 state_data = None
 if st.session_state.game_code:
+    game_code = st.session_state.game_code
     try:
         state_data = load_game_state(game_code)
     except ValueError:
