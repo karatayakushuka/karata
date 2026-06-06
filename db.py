@@ -29,7 +29,7 @@ def save_game_state(game_code, state, players):
         """, (game_code, state_json, players_json))
         conn.commit()
 
-def load_from_db(game_code):
+def load_game_state(game_code):
     with sqlite3.connect(DB_FILE) as conn:
         c = conn.cursor()
         c.execute("SELECT state, players FROM games WHERE game_code = ?", (game_code,))
