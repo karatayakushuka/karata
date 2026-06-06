@@ -119,7 +119,7 @@ def prepare_and_save_game_state(game_code, state, players):
 st.title("🃏 Karata ya Kushuka")
 init_db()
 startup_backup_routine(list_games, lambda code: load_from_db(code))
-periodic_cleanup()
+# periodic_cleanup()
 
 
 # PDF Download
