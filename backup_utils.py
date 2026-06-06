@@ -6,7 +6,7 @@ import glob
 import threading
 from datetime import datetime
 from cryptography.fernet import Fernet
-from db import save_to_db, load_from_db, init_db, DB_FILE
+from db import save_game_state, load_game_state, init_db, DB_FILE
 
 # Constants
 BACKUP_DIR = "game_states"
