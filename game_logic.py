@@ -162,6 +162,11 @@ def reshuffle_discard_into_deck():
 # Rule Checks
 
 def is_valid_play(card, top):
+    if isinstance(top, list):
+        if len(top) == 0:
+            return True  # nothing to match against
+        top = top[-1]  # take the last/top card
+
     if question_card_pending:
         return card.rank == question_card_rank or card.suit == top.suit
 
