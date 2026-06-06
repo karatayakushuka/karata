@@ -35,7 +35,7 @@ def load_game_state(game_code):
         c.execute("SELECT state, players FROM games WHERE game_code = ?", (game_code,))
         row = c.fetchone()
         if not row:
-            raise ValueError(f"Game code {game_code} not found")
+            return None
         state = json.loads(row[0])
         players = json.loads(row[1])
         return state, players
